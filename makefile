@@ -4,9 +4,14 @@ SRC =$(wildcard src/*.c)
 build/%: src/%.c
 	gcc -o $@ $< $(LDFLAGS)
 
-.PHONY: all test
+.PHONY: all test rebuild clean
 
 all: $(addprefix build/,$(notdir $(basename $(SRC))))
 	
-test: build/myfind
-	build/myfind test
+test: rebuild
+	build/snake
+
+rebuild: clean all
+
+clean: 
+	rm build/snake
