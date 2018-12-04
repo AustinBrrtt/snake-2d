@@ -1,171 +1,120 @@
-#include <stdlib.h>
-#include <curses.h>
-#include <signal.h>
 #include <stdio.h>
-#include <time.h>
-#include <unistd.h>
-#include <termios.h>
-#include <fcntl.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "snake.h"
-#define UP 0
-#define RIGHT 1
-#define DOWN 2
-#define LEFT 4
+#include "cursescontroller.h"
 
-int main() {
-	init_curses();
+Snake *new_snake(Vec2D *pos) {
+	Snake *snake = malloc(sizeof(Snake));
+	snake->head = malloc(sizeof(SnakeNode));
 	
-	Vec2D target = {
-		width / 2,
-		height / 2
-	};
+	snake->head->pos = pos;
+	snake->head->next = NULL;
 	
-	srand(time(NULL));
-	
-	food = (Vec2D){
-		rand() % width,
-		rand() % height
-	};
-	
-	Snake snake = start(target);
-	int dir = rand() % 4;
-	
-	while (1) {
-		switch (getch()) {
-			case 'w':
-			case 0x103:
-				dir = UP;
-			case 'a':
-			case 0x104:
-				dir = LEFT;
-			case 's':
-			case 0x102:
-				dir = DOWN;
-			case 'd':
-			case 0x105:
-				dir = RIGHT;
-			case 0x1b:
-				return 0;
-		}
-		
-		switch (dir) {
-			case UP:
-				target.y -= 1;
-				target.y = target.y > 0 ? target.y : 0;
-				break;
-			case RIGHT:
-				target.x += 1;
-				target.x = target.x < width - 1 ? target.x : width - 1;
-				break;
-			case LEFT:
-				target.x -= 1;
-				target.x = target.x > 0 ? target.x : 0;
-				break;
-			case DOWN:
-				target.y += 1;
-				target.y = target.y < height - 1 ? target.y : height - 1;
-		}
-		
-		if (target.x == food.x && target.y == food.y) {
-			snake_eat(&snake, food);
-		} else {
-			snake_move(&snake, target);
-		}
-		
-		snake_draw(snake);
-		sleep(1);
-		refresh();
-	}
-}
-
-Snake start(const Vec2D pos) {
-	init_curses();
-	
-	Snake snake = {
-		malloc(sizeof(SnakeNode))
-	};
-	
-	snake.head->pos = pos;
-	snake.head->next = NULL;
+	snake->direction = rand() % 4;
+	snake->growing = 0;
 	
 	return snake;
 }
 
-void init_curses() {
-	tty_mode(0);
-	signal(SIGINT, cleanup_curses);
-	initscr();
-	cbreak();
-	noecho();
-	keypad(stdscr, TRUE);
-	curs_set(0);
-	color_supported = has_colors();
+// Moves snake in direciton it is currently facing and updates food
+int slither(Snake *snake, Food *food) {
+	Vec2D *next_square = new_vec2d(snake->head->pos->x, snake->head->pos->y);
 	
-	if (color_supported) {
-		start_color();
-		init_pair(SUCCESS, COLOR_GREEN, COLOR_BLACK);
-		init_pair(NEUTRAL, COLOR_BLUE, COLOR_BLACK);
-		init_pair(DANGER, COLOR_RED, COLOR_BLACK);
-		init_pair(WARN, COLOR_YELLOW, COLOR_BLACK);
+	switch (snake->direction) {
+		case UP:
+			next_square->y -= 1;
+			next_square->y = next_square->y > 0 ? next_square->y : 0;
+			break;
+		case RIGHT:
+			next_square->x += 1;
+			next_square->x = next_square->x < COLS - 1 ? next_square->x : COLS - 1;
+			break;
+		case LEFT:
+			next_square->x -= 1;
+			next_square->x = next_square->x > 0 ? next_square->x : 0;
+			break;
+		case DOWN:
+			next_square->y += 1;
+			next_square->y = next_square->y < LINES - 1 ? next_square->y : LINES - 1;
 	}
-	width = COLS;
-	height = LINES;	
-}
-
-void cleanup_curses() {
-	tty_mode(1);
-}
-
-void snake_eat(Snake *snake, const Vec2D food_pos) {
-	SnakeNode *head = malloc(sizeof(SnakeNode));
-	head->pos = food_pos;
-	head->next = snake->head;
-	snake->head = head;
 	
-	food = (Vec2D){
-		rand() % width,
-		rand() % height
-	};
-}
-
-void snake_move(Snake *snake, const Vec2D spot) {
-	SnakeNode *cur = snake->head;
-	Vec2D prev = spot;
-	while (cur != NULL) {
-		Vec2D temp = cur->pos;
-		cur->pos = prev;
-		prev = temp;
-		cur = cur->next;
+	if (!check_living(*snake)) {
+		return -1;
 	}
+	
+	int result = 0;
+	if (vec2d_equals(*next_square, *(food->pos))) {
+		snake->growing += eat_food(food, snake_length(*snake) + snake->growing);
+		result += 1;
+	} else {
+		update_food(food, snake_length(*snake) + snake->growing);
+	}
+	
+	// Add head in front of snake
+	SnakeNode *new_head = malloc(sizeof(SnakeNode));
+	new_head->pos = next_square;
+	new_head->next = snake->head;
+	snake->head = new_head;
+	
+	// Remove tail unless snake should grow
+	if (snake->growing > 0) {
+		snake->growing -= 1;
+	} else {
+		trim_tail(snake);	
+	}
+	
+	return result;
 }
 
-void snake_draw(const Snake snake) {
+// Returns 1 if alive, 0 if dead
+int check_living(const Snake snake) {
+	Vec2D head_pos = *(snake.head->pos);
 	SnakeNode *cur = snake.head;
 	while (cur != NULL) {
-		move(cur->pos.y, cur->pos.x);
-		addch(ACS_CKBOARD);
-		
+		if (vec2d_equals(head_pos, *(cur->pos))) {
+			return 0;
+		}
 		cur = cur->next;
 	}
-	move(LINES - 1, 0);
+	return 1;
 }
 
-// Saves current TTY mode with how = 0, Restores saved mode with how = 1
-// (From in class play_again examples)
-void tty_mode(int how)
-{
-	static struct termios original_mode;
-	static int original_flags;
-	static int stored = 0;
+// Removes last piece from tail
+void trim_tail(Snake *snake) {
+	if (snake->head->next == NULL) {
+		abort_game("Snake trimmed to invalid length 0");
+	}
+	
+	// Set cur to the second-to-last node
+	SnakeNode *cur = snake->head;
+	while (cur->next->next != NULL) {
+		cur = cur->next;
+	}
+	
+	// Remove the last node
+	cur->next = NULL;
+}
 
-	if ( how == 0 ){
-		tcgetattr(0, &original_mode);
-		original_flags = fcntl(0, F_GETFL);
-		stored = 1;
+// Draws snake to screen
+void draw_snake(const Snake snake) {
+	SnakeNode *cur = snake.head;
+	while (cur != NULL) {
+		set_pixel(*(cur->pos), ACS_CKBOARD, GREEN);
+		cur = cur->next;
 	}
-	else if ( stored ) {
-		tcsetattr(0, TCSANOW, &original_mode); 
-		fcntl( 0, F_SETFL, original_flags);	
+}
+
+// Returns how long the snake is
+int snake_length(const Snake snake) {
+	int total = 0;
+	
+	SnakeNode *cur = snake.head;
+	while (cur != NULL) {
+		total++;
+		cur = cur->next;
 	}
+	
+	return total;
 }
