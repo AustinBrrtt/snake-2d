@@ -1,4 +1,5 @@
 #include "cursescontroller.h"
+#include "food.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,10 +32,12 @@ void init_curses(void (*cleanup)()) {
 		init_pair(RED, COLOR_RED, COLOR_BLACK);
 		init_pair(YELLOW, COLOR_YELLOW, COLOR_BLACK);
 	}
+	
+	drawing = 0;
 }
 
 // Restores terminal to normal state
-void cleanup_curses() {
+void cleanup_curses(int signum) {
 	stop_timer();
 	
 	if (game_cleanup) {
@@ -47,21 +50,26 @@ void cleanup_curses() {
 }
 
 // Cleans up and kills process
-void abort_game(const char *message) {
+void abort_game(const char *message, int status) {
 	cleanup_curses(0);
-	fprintf(stderr, "Stopping game because %s\n", message);
-	exit(1);
+	
+	if (status) {
+		fprintf(stderr, "Stopping game because %s\n", message);
+	}
+	
+	exit(status);
 }
 
 // Resets to plain window with border
 void clear_and_border() {
+	drawing = 1;
 	clear();
 	
-	// Draw border corners
 	if (color_supported) {
 		attron(COLOR_PAIR(WHITE));
 	}
 	
+	// Draw border corners
 	move(0,0);
 	addch(ACS_ULCORNER);
 	
@@ -99,6 +107,7 @@ void clear_and_border() {
 void draw() {
 	move(LINES - 1, 0);
 	refresh();
+	drawing = 0;
 }
 
 // Sets the pixel at the given point with the given color and character

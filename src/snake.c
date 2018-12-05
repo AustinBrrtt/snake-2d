@@ -88,7 +88,7 @@ int check_living(const Snake snake) {
 // Removes last piece from tail
 void trim_tail(Snake *snake) {
 	if (snake->head->next == NULL) {
-		abort_game("Snake trimmed to invalid length 0");
+		abort_game("Snake trimmed to invalid length 0", 1);
 	}
 	
 	// Set cur to the second-to-last node

@@ -22,16 +22,19 @@ void (*game_loop)();
 // Cleanup for game logic
 void (*game_cleanup)();
 
+// Lock to avoid frames being drawn simultaneously
+int drawing;
+
 
 /***** Functions *****/
 // Sets up terminal for curses and sets capability flags
 void init_curses(void (*cleanup)());
 
 // Restores terminal to normal state
-void cleanup_curses();
+void cleanup_curses(int signum);
 
 // Cleans up and kills process
-void abort_game(const char *message);
+void abort_game(const char *message, int status);
 
 // Resets to plain window with border
 void clear_and_border();

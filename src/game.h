@@ -8,17 +8,28 @@
 #define SPEED_INCREMENT 10 // ms per frame
 #define MAX_SPEED 50 // ms per frame
 
+#define SINGLE_PLAYER 0
+#define MP_HOST 1
+#define MP_JOIN 2
+
 int width;
 int height;
 int speed;
+int score;
 Snake *snake;
 Food *food;
+
+// Starts the game
+void start_game(int mode);
 
 // Cleans up memory
 void cleanup();
 
 // Main game logic loop
 void main_loop();
+
+// Draw the score in the upper right
+void draw_score();
 
 // Increases game speed
 void speed_up();

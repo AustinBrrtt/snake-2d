@@ -27,12 +27,12 @@ void spawn_food(Food *food, int difficulty) {
 
 // Draws food on screen
 void draw_food(const Food food) {
-	set_pixel(*(food.pos), get_digit(food.life), RED);
+	set_pixel(*(food.pos), get_digit(food.life / TICKS_PER_DECAY), RED);
 }
 
 // Converts int to single digit or + if larger
 char get_digit(int i) {
-	switch (i / TICKS_PER_DECAY) {
+	switch (i % 10) {
 		case 0: return '0';
 		case 1: return '1';
 		case 2: return '2';
@@ -43,7 +43,6 @@ char get_digit(int i) {
 		case 7: return '7';
 		case 8: return '8';
 		case 9: return '9';
-		default: return '+';
 	}
 }
 
