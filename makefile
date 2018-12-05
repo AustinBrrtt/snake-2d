@@ -1,17 +1,20 @@
 LDFLAGS =-lcurses -lm
 SRC =$(wildcard src/*.c)
 
-build/%: src/%.c
-	gcc -o $@ $< $(LDFLAGS)
+build/game: $(SRC)
+	gcc -o build/game $(SRC) $(LDFLAGS)
 
-.PHONY: all test rebuild clean
+.PHONY: debug setdebugflag test rebuild clean
 
-all: $(addprefix build/,$(notdir $(basename $(SRC))))
+debug: clean $(SRC)
+	gcc -g -o build/game $(SRC) $(LDFLAGS)
+	gdb -ex --se build/game
+	
 	
 test: rebuild
-	build/snake
+	build/game
 
-rebuild: clean all
+rebuild: clean build/game
 
 clean: 
-	rm build/snake
+	rm build/game -f > /dev/null
