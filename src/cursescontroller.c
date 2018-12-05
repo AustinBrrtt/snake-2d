@@ -15,6 +15,7 @@ void init_curses(void (*cleanup)()) {
 	tty_mode(0);
 	game_cleanup = cleanup;
 	signal(SIGINT, cleanup_curses);
+	signal(SIGSEGV, cleanup_curses);
 	initscr();
 	cbreak();
 	set_cr_noecho_mode();
@@ -47,6 +48,7 @@ void cleanup_curses(int signum) {
 	clear();
 	refresh();
 	tty_mode(1);
+	exit(0);
 }
 
 // Cleans up and kills process

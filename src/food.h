@@ -11,10 +11,10 @@ typedef struct {
 } Food;
 
 // Constructor for Food
-Food *new_food(int difficulty);
+Food *new_food();
 
 // Randomly chooses location and lifespan for food 
-void spawn_food(Food *food, int difficulty);
+void spawn_food(Food *food);
 
 // Draws food on screen
 void draw_food(const Food food);
@@ -23,9 +23,9 @@ void draw_food(const Food food);
 char get_digit(int i);
 
 // Decrement life and reset if EOL
-void update_food(Food *food, int difficulty);
+void update_food(Food *food);
 
 // Returns amount for snake to grow
-int eat_food(Food *food, int difficulty);
+int eat_food(Food *food);
 
 #endif // FOOD_H

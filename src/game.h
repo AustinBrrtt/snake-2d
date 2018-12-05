@@ -16,6 +16,7 @@ int width;
 int height;
 int speed;
 int score;
+int game_mode;
 Snake *snake;
 Food *food;
 
@@ -27,6 +28,12 @@ void cleanup();
 
 // Main game logic loop
 void main_loop();
+
+// Main host game logic loop
+void host_loop();
+
+// Main client game logic loop
+void client_loop();
 
 // Draw the score in the upper right
 void draw_score();

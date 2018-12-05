@@ -19,28 +19,28 @@ void pause() {
 	strcpy(pause->title_alt, "Pause");
 	pause->title_color = YELLOW;
 	
-	pause->num_options = 2;
+	pause->num_options = 3;
 	pause->options = malloc(sizeof(MenuOption) * pause->num_options);
 	
 	pause->options[0].length = 6;
 	pause->options[0].name = malloc(pause->options[0].length * sizeof(char));
 	strcpy(pause->options[0].name, "Resume");
-	pause->options[0].action = main_loop;
-	pause->options[0].loop_ms = speed;
+	pause->options[0].action = resume_wrapper;
 	
-	pause->options[1].length = 4;
+	pause->options[1].length = 8;
 	pause->options[1].name = malloc(pause->options[1].length * sizeof(char));
-	strcpy(pause->options[1].name, "Exit");
-	pause->options[1].action = exit_wrapper;
-	pause->options[1].loop_ms = 10000;
+	strcpy(pause->options[1].name, "New Game");
+	pause->options[1].action = main_menu;
+	
+	pause->options[2].length = 4;
+	pause->options[2].name = malloc(pause->options[2].length * sizeof(char));
+	strcpy(pause->options[2].name, "Exit");
+	pause->options[2].action = exit_wrapper;
 	
 	pause->selected_option = 0;
 	pause->back_option = 0;
 	
 	current_menu = pause;
-	
-	while(drawing); // wait for drawing to finish
-	draw_menu(pause);
 	
 	loop(run_menu, START_SPEED);
 }
@@ -64,33 +64,26 @@ void main_menu() {
 	main_menu->options[0].name = malloc(main_menu->options[0].length * sizeof(char));
 	strcpy(main_menu->options[0].name, "Single Player");
 	main_menu->options[0].action = sp_wrapper;
-	main_menu->options[0].loop_ms = 10000;
 	
 	main_menu->options[1].length = 18;
 	main_menu->options[1].name = malloc(main_menu->options[1].length * sizeof(char));
 	strcpy(main_menu->options[1].name, "Multiplayer (Host)");
 	main_menu->options[1].action = mp_wrapper_host;
-	main_menu->options[1].loop_ms = 10000;
 	
 	main_menu->options[2].length = 18;
 	main_menu->options[2].name = malloc(main_menu->options[2].length * sizeof(char));
 	strcpy(main_menu->options[2].name, "Multiplayer (Join)");
 	main_menu->options[2].action = mp_wrapper_join;
-	main_menu->options[2].loop_ms = 10000;
 	
 	main_menu->options[3].length = 4;
 	main_menu->options[3].name = malloc(main_menu->options[3].length * sizeof(char));
 	strcpy(main_menu->options[3].name, "Exit");
 	main_menu->options[3].action = exit_wrapper;
-	main_menu->options[3].loop_ms = 10000;
 	
 	main_menu->selected_option = 0;
 	main_menu->back_option = 0;
 	
 	current_menu = main_menu;
-	
-	while(drawing); // wait for drawing to finish
-	draw_menu(main_menu);
 	
 	loop(run_menu, START_SPEED);
 }
@@ -111,35 +104,41 @@ void mp_wrapper_join() {
 	start_game(MP_JOIN);
 }
 
+void resume_wrapper() {
+	switch(game_mode) {
+		case SINGLE_PLAYER: 
+			loop(main_loop, speed);
+			return;
+		case MP_HOST:
+			loop(host_loop, speed);
+			return;
+		case MP_JOIN:
+			loop(client_loop, speed);
+	}
+}
+
 void run_menu() {
-	// Avoid drawing if same (to prevent lag in switching options)
-	int do_draw = 0;
-	
-			char buffer[9];
-	int c;
-	switch ((c = getch())) {
+	switch (getch()) {
 		case 'w':
 		case 0x103: // up
 		case 'a':
 		case 0x104: // left
 			current_menu->selected_option = (current_menu->num_options + current_menu->selected_option - 1) % current_menu->num_options; // Add num_options in extra time to avoid negative mod
-			do_draw = 1;
 			break;
 		case 's':
 		case 0x102: // down
 		case 'd':
 		case 0x105: // right
 			current_menu->selected_option = (current_menu->selected_option + 1) % current_menu->num_options;
-			do_draw = 1;
 			break;
 		case 0x1b: // escape
 			current_menu->selected_option = current_menu->back_option;
 		case 0x20: // space
 		case 0xa: // enter
-			loop(current_menu->options[current_menu->selected_option].action, current_menu->options[current_menu->selected_option].loop_ms);
+			current_menu->options[current_menu->selected_option].action();
 			return;
 	}
-	if (do_draw && !drawing) {
+	if (!drawing) {
 		draw_menu(current_menu);
 	}
 }
@@ -166,7 +165,7 @@ void draw_title(Menu *menu) {
 	} else if (COLS - 2 > menu->title_alt_len && LINES > 3 + menu->num_options) {
 		// Plain text title in border
 		for (int i = 0; i < menu->title_alt_len; i++) {
-			set_pixel(*(new_vec2d(1 + i, 1)), menu->title_alt[i], menu->title_color);
+			set_pixel(*(new_vec2d(1 + i, LINES - 1 - menu->num_options)), menu->title_alt[i], menu->title_color);
 		}
 	} else if (COLS > menu->title_alt_len && LINES > menu->num_options) {
 		// Plain text title, no border

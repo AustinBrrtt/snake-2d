@@ -5,6 +5,8 @@
 
 #include "game.h"
 #include "menu.h"
+#include "host.h"
+#include "client.h"
 #include "cursescontroller.h"
 
 int main() {
@@ -15,21 +17,37 @@ int main() {
 	
 	width = COLS;
 	height = LINES;
-	score = 0;
 	
-	food = new_food(1);
-	
-	snake = new_snake(new_vec2d(width / 2, height / 2));
-	
-	speed = START_SPEED;
-	
-	//main_menu();
-	start_game(SINGLE_PLAYER);
+	main_menu();
+	//start_game(SINGLE_PLAYER);
 	while(1);
 }
 
 void start_game(int mode) {
-	loop(main_loop, START_SPEED);
+	game_mode = mode;
+	switch(mode) {
+		case SINGLE_PLAYER:
+			food = new_food();
+			snake = new_snake(new_vec2d(width / 2, height / 2));
+			speed = START_SPEED;
+			score = 0;
+			food = new_food();
+			snake = new_snake(new_vec2d(width / 2, height / 2));
+			
+			loop(main_loop, START_SPEED);
+			break;
+		case MP_HOST:
+			start_hosting();
+			game_cleanup = cleanup_host;
+			
+			loop(host_loop, START_SPEED);
+			break;
+		case MP_JOIN:
+			join();
+			game_cleanup = cleanup_client;
+			
+			loop(client_loop, START_SPEED);
+	}
 }
 
 // Cleans up memory
@@ -76,7 +94,7 @@ void main_loop() {
 			snake->direction = RIGHT;
 			break;
 		case 0x1b:
-			end_game(0, score);
+			pause();
 	}
 	
 	// Update snake and food
@@ -91,7 +109,6 @@ void main_loop() {
 	} else {
 		if (!drawing) {
 			clear_and_border();
-			move(0,COLS - 3);
 			draw_score();
 			draw_snake(*snake);
 			draw_food(*food);
@@ -99,6 +116,112 @@ void main_loop() {
 		}
 		if (snake_length(*snake) - old_length) {
 			speed_up();
+		}
+	}
+}
+
+void host_loop() {
+	if (COLS == 0 || LINES == 0) {
+		return;
+	}
+	
+	int old_length = snake_length(*snake);
+	score = old_length + snake->growing;
+	
+	switch (getch()) {
+		case 'w':
+		case 0x103:
+			if (snake->direction == DOWN) {
+				end_game(0,score);
+			}
+			snake->direction = UP;
+			break;
+		case 'a':
+		case 0x104:
+			if (snake->direction == RIGHT) {
+				end_game(0,score);
+			}
+			snake->direction = LEFT;
+			break;
+		case 's':
+		case 0x102:
+			if (snake->direction == UP) {
+				end_game(0,score);
+			}
+			snake->direction = DOWN;
+			break;
+		case 'd':
+		case 0x105:
+			if (snake->direction == LEFT) {
+				end_game(0,score);
+			}
+			snake->direction = RIGHT;
+			break;
+		case 0x1b:
+			pause();
+	}
+	
+	switch (host_sync(*snake, *food)) {
+		case 'w':
+		case 0x103:
+			if (food->pos->y > 1) {
+				food->pos->y -= 1;
+			}
+			break;
+		case 'a':
+		case 0x104:
+			if (food->pos->x > 1) {
+				food->pos->x -= 1;
+			}
+			break;
+		case 's':
+		case 0x102:
+			if (food->pos->y < LINES - 1) {
+				food->pos->y += 1;
+			}
+			break;
+		case 'd':
+		case 0x105:
+			if (food->pos->x < COLS - 1) {
+				food->pos->x += 1;
+			}
+	}
+	
+	// Update snake and food
+	int result = slither(snake, food);
+	
+	// Update score
+	score = snake_length(*snake) + snake->growing;
+	if (result == -1) {
+		end_game(0, score);
+	} else if (score > COLS / 2) {
+		end_game(1, score);
+	} else {
+		if (!drawing) {
+			clear_and_border();
+			draw_score();
+			draw_snake(*snake);
+			draw_food(*food);
+			draw();
+		}
+		if (snake_length(*snake) - old_length) {
+			speed_up();
+		}
+	}
+}
+
+void client_loop() {
+	int c = getch();
+	if (c == '0x1b') {
+		pause();
+	} else {
+		client_sync(getch(),snake, food);
+		if (!drawing) {
+			clear_and_border();
+			draw_score();
+			draw_snake(*snake);
+			draw_food(*food);
+			draw();
 		}
 	}
 }

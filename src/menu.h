@@ -5,7 +5,6 @@ typedef struct {
 	char *name;
 	int length;
 	void (*action)();
-	int loop_ms;
 } MenuOption;
 
 typedef struct {
@@ -31,6 +30,7 @@ void exit_wrapper();
 void sp_wrapper();
 void mp_wrapper_host();
 void mp_wrapper_join();
+void resume_wrapper();
 
 void run_menu();
 

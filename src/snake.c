@@ -46,10 +46,10 @@ int slither(Snake *snake, Food *food) {
 	
 	int result = 0;
 	if (vec2d_equals(*next_square, *(food->pos))) {
-		snake->growing += eat_food(food, snake_length(*snake) + snake->growing);
+		snake->growing += eat_food(food);
 		result += 1;
 	} else {
-		update_food(food, snake_length(*snake) + snake->growing);
+		update_food(food);
 	}
 	
 	// Add head in front of snake

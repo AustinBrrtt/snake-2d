@@ -4,18 +4,17 @@
 #include "cursescontroller.h"
 
 // Constructor for Food
-Food *new_food(int difficulty) {
+Food *new_food() {
 	Food *food = malloc(sizeof(Food));
 	food->pos = malloc(sizeof(Vec2D));
-	spawn_food(food, difficulty);
+	spawn_food(food);
 	return food;
 }
 
 // Randomly chooses location and lifespan for food 
-void spawn_food(Food *food, int difficulty) {
-	// Life is between (9 - difficulty) and 9
-	food->life = rand() % (TICKS_PER_DECAY * difficulty) + 
-		(10 * TICKS_PER_DECAY - 1) - (TICKS_PER_DECAY * difficulty);
+void spawn_food(Food *food) {
+	// Life is between 1 and 9
+	food->life = (rand() % 8 + 1) * TICKS_PER_DECAY;
 	
 	if (COLS > 0 && LINES > 0) {
 		// Pick position on screen (border excluded)
@@ -47,19 +46,19 @@ char get_digit(int i) {
 }
 
 // Decrement life and reset if EOL
-void update_food(Food *food, int difficulty) {
+void update_food(Food *food) {
 	food->life -= 1;
 	if (food->life < 0) {
-		spawn_food(food, difficulty);
+		spawn_food(food);
 	}
 }
 
 // Returns amount for snake to grow
-int eat_food(Food *food, int difficulty) {
+int eat_food(Food *food) {
 	int score = food->life % TICKS_PER_DECAY;
 	if (score < 1) {
 		score = 1;
 	}
-	spawn_food(food, difficulty);
+	spawn_food(food);
 	return score;
 }
