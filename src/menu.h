@@ -22,16 +22,18 @@ typedef struct {
 
 Menu *current_menu;
 
-void pause();
+void pause_menu();
 void main_menu();
 void win(int score);
 void death(int score);
+void waiting();
 
 // Parameter-less functions to use as actions in menus
 void exit_wrapper();
 void sp_wrapper();
 void mp_wrapper_host();
 void mp_wrapper_join();
+void cancel_wrapper();
 void resume_wrapper();
 
 void run_menu();

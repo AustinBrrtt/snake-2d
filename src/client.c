@@ -10,7 +10,9 @@
 
 #include "vec2d.h"
 #include "host.h"
+#include "menu.h"
 #include "cursescontroller.h"
+#include "game.h"
 
 int parse_int(char* str, int digits) {
 	int n = 0;
@@ -29,15 +31,26 @@ void from_int(int number, char *output, int digits) {
 }
 
 void cleanup_client() {
-	close(client_sockid);
+	if (client_sockid) {
+		close(client_sockid);
+	}
 }
 
 void join() {
-	int client_client_sockid;
-    struct sockaddr_in addrport;
-    struct sockaddr_storage storage;
-    int port_size = sizeof addrport;
-    int addr_size = sizeof storage;
+	client_lock = 0;
+    
+	
+	loop(client_loop, START_SPEED);
+	client_lock = 0;
+}
+
+void client_sync(int input, Snake *snake, Food *food) {
+	if (client_lock) {
+		return;
+	}
+	client_lock = 1;
+	port_size = sizeof addrport;
+    addr_size = sizeof storage;
 
     if ((client_sockid = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
         abort_game("failed to create socket", 1);
@@ -50,25 +63,29 @@ void join() {
     if (inet_pton(AF_INET, "127.0.0.1", &addrport.sin_addr) <= 0) {
         abort_game("invalid address", 1);
     }
-
-    if (connect(client_sockid, (struct sockaddr *)&addrport, sizeof(addrport)) < 0) {
-        abort_game("failed to connect", 1);
-    }
-}
-
-void client_sync(int input, Snake *snake, Food *food) {
-    char buffer[MESSAGE_BUFFER_SIZE];
+	move(0,0);
+	addstr("LOADING...");
+	int width = COLS;
+	int height = LINES;
+    while (connect(client_sockid, (struct sockaddr *)&addrport, sizeof(addrport)) < 0);
+	char buffer[MESSAGE_BUFFER_SIZE];
     memset(buffer, '\0', MESSAGE_BUFFER_SIZE);
 	char msg[5];
 	from_int(input, msg, 5);
 	send(client_sockid, msg, 5, 0);
     read(client_sockid, buffer, MESSAGE_BUFFER_SIZE);
+	
+	// char message[1000];
+	// sprintf(message, "Buffer has size %d.", strlen(buffer));
+	// abort_game(message, 1);
+	
 	snake = parse_snake(buffer, strlen(buffer));
 	int offset = 1;
 	while (buffer[offset] != 'F') {
 		offset += 6;
 	}
 	food = parse_food(buffer + offset, strlen(buffer + offset));
+	client_lock = 0;
 }
 
 

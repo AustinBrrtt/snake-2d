@@ -6,8 +6,10 @@
 #include "cursescontroller.h"
 #include "vec2d.h"
 #include "game.h"
+#include "host.h"
+#include "client.h"
 
-void pause() {
+void pause_menu() {
 	stop_timer();
 	
 	Menu *pause = malloc(sizeof(Menu));
@@ -115,10 +117,10 @@ void main_menu() {
 	stop_timer();
 	
 	Menu *main_menu = malloc(sizeof(Menu));
-	main_menu->title_width = 54;
-	main_menu->title_height = 7;
+	main_menu->title_width = 67;
+	main_menu->title_height = 15;
 	main_menu->title = malloc((main_menu->title_width * main_menu->title_height + 1) * sizeof(char));
-	strcpy(main_menu->title, " =======   |\\      |        ^        |     /  ========/          | \\     |       / \\       |    /   |       \\          |  \\    |      /   \\      |   /    |        =======   |   \\   |     /_____\\     |===     |====           \\  |    \\  |    /       \\    |   \\    |               /  |     \\ |   /         \\   |    \\   |        =======   |      \\|  /           \\  |     \\  ========");
+	strcpy(main_menu->title, "          |=======           ^        ======   |     /                       |       ==        / \\       |     |  |    /                        |         |      /   \\      |     |  |   /                         |         |     /_____\\     |=====   |===                          |         |    /       \\    |    \\   |   \\                         |       ==    /         \\   |     \\  |    \\                        |=======     /           \\  |     |  |     \\                                                                                 =======   |\\      |        ^        |     /  ========   =======   /          | \\     |       / \\       |    /   |         /          \\          |  \\    |      /   \\      |   /    |         \\           =======   |   \\   |     /_____\\     |===     |====      =======           \\  |    \\  |    /       \\    |   \\    |                 \\          /  |     \\ |   /         \\   |    \\   |                 /   =======   |      \\|  /           \\  |     \\  ========   =======   ");
 	main_menu->title_alt = malloc(6 * sizeof(char));
 	strcpy(main_menu->title_alt, "Snake");
 	main_menu->title_color = GREEN;
@@ -147,9 +149,37 @@ void main_menu() {
 	main_menu->options[3].action = exit_wrapper;
 	
 	main_menu->selected_option = 0;
-	main_menu->back_option = 0;
+	main_menu->back_option = 3;
 	
 	current_menu = main_menu;
+	
+	loop(run_menu, START_SPEED);
+}
+
+void waiting() {
+	stop_timer();
+	
+	Menu *waiting = malloc(sizeof(Menu));
+	waiting->title_width = 92;
+	waiting->title_height = 7;
+	waiting->title = malloc((waiting->title_width * waiting->title_height + 1) * sizeof(char));
+	strcpy(waiting->title, "\\                 /        ^        ==========  ==========  ==========  |\\      |  |=======| \\               /        / \\           ||          ||          ||      | \\     |  |       |  \\             /        /   \\          ||          ||          ||      |  \\    |  |           \\           /        /_____\\         ||          ||          ||      |   \\   |  |            \\   /\\    /        /       \\        ||          ||          ||      |    \\  |  |   _____     \\ /  \\  /        /         \\       ||          ||          ||      |     \\ |  |       |      V    \\/        /           \\  ==========      ||      ==========  |      \\|  |_______ ");
+	waiting->title_alt = malloc(11 * sizeof(char));
+	strcpy(waiting->title_alt, "waiting...");
+	waiting->title_color = YELLOW;
+	
+	waiting->num_options = 1;
+	waiting->options = malloc(sizeof(MenuOption) * waiting->num_options);
+	
+	waiting->options[0].length = 7;
+	waiting->options[0].name = malloc(waiting->options[0].length * sizeof(char));
+	strcpy(waiting->options[0].name, "Cancel");
+	waiting->options[0].action = cancel_wrapper;
+	
+	waiting->selected_option = 0;
+	waiting->back_option = 0;
+	
+	current_menu = waiting;
 	
 	loop(run_menu, START_SPEED);
 }
@@ -168,6 +198,12 @@ void mp_wrapper_host() {
 
 void mp_wrapper_join() {
 	start_game(MP_JOIN);
+}
+
+void cancel_wrapper() {
+	cleanup_host();
+	cleanup_client();
+	main_menu();
 }
 
 void resume_wrapper() {
