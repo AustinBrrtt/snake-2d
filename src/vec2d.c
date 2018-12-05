@@ -11,6 +11,14 @@ Vec2D *new_vec2d(int x, int y) {
 	return vec;
 }
 
+// Deep copy
+Vec2D *clone_vec2d(const Vec2D muse) {
+	Vec2D *vec = malloc(sizeof(Vec2D));
+	vec->x = muse.x;
+	vec->y = muse.y;
+	return vec;
+}
+
 // Checks if two Vec2Ds are equal
 int vec2d_equals(const Vec2D a, const Vec2D b) {
 	return a.x == b.x && a.y == b.y;

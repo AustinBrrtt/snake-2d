@@ -3,9 +3,11 @@
 
 #include "vec2d.h"
 
+#define TICKS_PER_DECAY 10 // how many frames until food decays by 1
+
 typedef struct {
 	Vec2D *pos; // Position on screen
-	int life; // How long to stick around
+	int life; // How many frames to stick around
 } Food;
 
 // Constructor for Food

@@ -49,9 +49,8 @@ void cleanup_curses() {
 // Cleans up and kills process
 void abort_game(const char *message) {
 	cleanup_curses(0);
-	fprintf(stderr, "Stopping game because %s", message);
+	fprintf(stderr, "Stopping game because %s\n", message);
 	exit(1);
-	return;
 }
 
 // Resets to plain window with border

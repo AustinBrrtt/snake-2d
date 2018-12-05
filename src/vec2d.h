@@ -10,6 +10,9 @@ typedef struct {
 // Constructor for Vec2D
 Vec2D *new_vec2d(int x, int y);
 
+// Deep copy
+Vec2D *clone_vec2d(const Vec2D muse);
+
 // Checks if two Vec2Ds are equal
 int vec2d_equals(const Vec2D a, const Vec2D b);
 

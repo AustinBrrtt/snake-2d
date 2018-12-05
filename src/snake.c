@@ -20,24 +20,24 @@ Snake *new_snake(Vec2D *pos) {
 
 // Moves snake in direciton it is currently facing and updates food
 int slither(Snake *snake, Food *food) {
-	Vec2D *next_square = new_vec2d(snake->head->pos->x, snake->head->pos->y);
+	Vec2D *next_square = clone_vec2d(*(snake->head->pos));
 	
 	switch (snake->direction) {
 		case UP:
 			next_square->y -= 1;
-			next_square->y = next_square->y > 0 ? next_square->y : 0;
+			//next_square->y = next_square->y > 0 ? next_square->y : 0;
 			break;
 		case RIGHT:
 			next_square->x += 1;
-			next_square->x = next_square->x < COLS - 1 ? next_square->x : COLS - 1;
+			//next_square->x = next_square->x < COLS - 1 ? next_square->x : COLS - 1;
 			break;
 		case LEFT:
 			next_square->x -= 1;
-			next_square->x = next_square->x > 0 ? next_square->x : 0;
+			//next_square->x = next_square->x > 0 ? next_square->x : 0;
 			break;
 		case DOWN:
 			next_square->y += 1;
-			next_square->y = next_square->y < LINES - 1 ? next_square->y : LINES - 1;
+			//next_square->y = next_square->y < LINES - 1 ? next_square->y : LINES - 1;
 	}
 	
 	if (!check_living(*snake)) {
@@ -71,7 +71,11 @@ int slither(Snake *snake, Food *food) {
 // Returns 1 if alive, 0 if dead
 int check_living(const Snake snake) {
 	Vec2D head_pos = *(snake.head->pos);
-	SnakeNode *cur = snake.head;
+	if(snake.head->pos->x < 1 || snake.head->pos->y < 1 ||
+		snake.head->pos->x > COLS - 2 || snake.head->pos->y > LINES - 2) {
+			return 0;
+		}
+	SnakeNode *cur = snake.head->next;
 	while (cur != NULL) {
 		if (vec2d_equals(head_pos, *(cur->pos))) {
 			return 0;

@@ -14,11 +14,15 @@ Food *new_food(int difficulty) {
 // Randomly chooses location and lifespan for food 
 void spawn_food(Food *food, int difficulty) {
 	// Life is between (9 - difficulty) and 9
-	food->life = rand() % difficulty + 9 - difficulty;
+	food->life = rand() % (TICKS_PER_DECAY * difficulty) + 
+		(10 * TICKS_PER_DECAY - 1) - (TICKS_PER_DECAY * difficulty);
 	
-	// Pick position on screen
-	food->pos->x = rand() % COLS;
-	food->pos->y = rand() % LINES;
+	if (COLS > 0 && LINES > 0) {
+		// Pick position on screen (border excluded)
+		food->pos->x = rand() % (COLS - 2) + 1;
+		food->pos->y = rand() % (LINES - 2) + 1;
+	}
+	
 }
 
 // Draws food on screen
@@ -28,12 +32,13 @@ void draw_food(const Food food) {
 
 // Converts int to single digit or + if larger
 char get_digit(int i) {
-	switch (i) {
+	switch (i / TICKS_PER_DECAY) {
 		case 0: return '0';
 		case 1: return '1';
 		case 2: return '2';
-		case 4: return '3';
-		case 5: return '4';
+		case 3: return '3';
+		case 4: return '4';
+		case 5: return '5';
 		case 6: return '6';
 		case 7: return '7';
 		case 8: return '8';
@@ -52,7 +57,10 @@ void update_food(Food *food, int difficulty) {
 
 // Returns amount for snake to grow
 int eat_food(Food *food, int difficulty) {
-	int score = food->life;
+	int score = food->life % TICKS_PER_DECAY;
+	if (score < 1) {
+		score = 1;
+	}
 	spawn_food(food, difficulty);
 	return score;
 }

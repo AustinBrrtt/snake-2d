@@ -7,6 +7,10 @@
 
 int main() {
 	srand(time(NULL));
+	
+	// Has to be before getting width and height or COLS and LINES will be 0
+	init_curses(cleanup);
+	
 	width = COLS;
 	height = LINES;
 	
@@ -15,9 +19,10 @@ int main() {
 	snake = new_snake(new_vec2d(width / 2, height / 2));
 	
 	speed = START_SPEED;
-
-	init_curses(&cleanup);
-	loop(&main_loop, speed);	
+	
+	loop(main_loop, speed);
+	
+	while(1);
 }
 
 // Cleans up memory
@@ -27,20 +32,27 @@ void cleanup() {
 }
 
 void main_loop() {
+	if (COLS == 0 || LINES == 0) {
+		return;
+	}
 	
 	switch (getch()) {
 		case 'w':
 		case 0x103:
 			snake->direction = UP;
+			break;
 		case 'a':
 		case 0x104:
 			snake->direction = LEFT;
+			break;
 		case 's':
 		case 0x102:
 			snake->direction = DOWN;
+			break;
 		case 'd':
 		case 0x105:
 			snake->direction = RIGHT;
+			break;
 		case 0x1b:
 			end_game(0,snake_length(*snake) + snake->growing);
 	}
@@ -62,5 +74,11 @@ void main_loop() {
 
 // Ends gameplay
 void end_game(int success, int score) {
-	abort_game("Not really an error, just game end"); // temporary
+	char *status = "died";
+	if (success) {
+		status = "won";
+	}
+	char buffer[200];
+	sprintf(buffer, "the game is over. You %s, and your score is %d.", success, score);
+	abort_game(buffer); // temporary
 }
