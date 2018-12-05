@@ -6,9 +6,11 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "vec2d.h"
 #include "host.h"
+#include "cursescontroller.h"
 
 int parse_int(char* str, int digits) {
 	int n = 0;
@@ -76,8 +78,8 @@ Snake *parse_snake(char *message, int message_length) {
 	}
 	Snake *snake = malloc(sizeof(Snake));
 	snake->head = malloc(sizeof(SnakeNode));
-	snake->growing = parse_int(message[1], 3);
-	snake->direction = parse_int(message[4], 3);
+	snake->growing = parse_int(message + 1, 3);
+	snake->direction = parse_int(message + 4, 3);
 	
 	SnakeNode *current = snake->head;
     for (int i = 0; i < message_length; i += 6) {

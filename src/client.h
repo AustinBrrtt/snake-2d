@@ -16,4 +16,4 @@ Snake *parse_snake(char *message, int message_length);
 
 Food *parse_food(char *message, int message_length);
 
-#endif CLIENT_H
+#endif // CLIENT_H

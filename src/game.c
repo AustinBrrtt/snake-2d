@@ -212,7 +212,7 @@ void host_loop() {
 
 void client_loop() {
 	int c = getch();
-	if (c == '0x1b') {
+	if (c == 0x1b) {
 		pause();
 	} else {
 		client_sync(getch(),snake, food);
@@ -253,11 +253,9 @@ void speed_up() {
 
 // Ends gameplay
 void end_game(int success, int score) {
-	char *status = "died";
-	if (success) {
-		strcpy(status, "won");
+	if (!success) {
+		win(score);
+	} else {
+		death(score);
 	}
-	char buffer[200];
-	sprintf(buffer, "You %s!\nScore: %d.", status, score);
-	abort_game("", 0); // temporary
 }

@@ -24,6 +24,8 @@ Menu *current_menu;
 
 void pause();
 void main_menu();
+void win(int score);
+void death(int score);
 
 // Parameter-less functions to use as actions in menus
 void exit_wrapper();

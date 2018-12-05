@@ -13,29 +13,95 @@ void pause() {
 	Menu *pause = malloc(sizeof(Menu));
 	pause->title_width = 54;
 	pause->title_height = 7;
-	pause->title = malloc(pause->title_width * pause->title_height * sizeof(char));
+	pause->title = malloc((pause->title_width * pause->title_height + 1) * sizeof(char));
 	strcpy(pause->title, "======         ^        |      |    =======   ========|     |       / \\       |      |   /          |       |     |      /   \\      |      |   \\          |       |=====      /_____\\     |      |    =======   |====   |          /       \\    |      |           \\  |       |         /         \\   |      |           /  |       |        /           \\  \\______/    =======   ========");
-	pause->title_alt = malloc(5 * sizeof(char));
+	pause->title_alt = malloc(6 * sizeof(char));
 	strcpy(pause->title_alt, "Pause");
 	pause->title_color = YELLOW;
 	
 	pause->num_options = 3;
 	pause->options = malloc(sizeof(MenuOption) * pause->num_options);
 	
-	pause->options[0].length = 6;
+	pause->options[0].length = 7;
 	pause->options[0].name = malloc(pause->options[0].length * sizeof(char));
 	strcpy(pause->options[0].name, "Resume");
 	pause->options[0].action = resume_wrapper;
 	
-	pause->options[1].length = 8;
+	pause->options[1].length = 9;
 	pause->options[1].name = malloc(pause->options[1].length * sizeof(char));
 	strcpy(pause->options[1].name, "New Game");
 	pause->options[1].action = main_menu;
 	
-	pause->options[2].length = 4;
+	pause->options[2].length = 5;
 	pause->options[2].name = malloc(pause->options[2].length * sizeof(char));
 	strcpy(pause->options[2].name, "Exit");
 	pause->options[2].action = exit_wrapper;
+	
+	pause->selected_option = 0;
+	pause->back_option = 0;
+	
+	current_menu = pause;
+	
+	loop(run_menu, START_SPEED);
+}
+
+void death(int score) {
+	stop_timer();
+	
+	Menu *pause = malloc(sizeof(Menu));
+	pause->title_width = 49;
+	pause->title_height = 7;
+	pause->title = malloc((pause->title_width * pause->title_height + 1) * sizeof(char));
+	strcpy(pause->title, "|=======     ========        ^        |=======   |       ==   |              / \\       |       == |         |  |             /   \\      |         ||         |  |====        /_____\\     |         ||         |  |           /       \\    |         ||       ==   |          /         \\   |       == |=======     ========  /           \\  |=======   ");
+	pause->title_alt = malloc(10 * sizeof(char));
+	strcpy(pause->title_alt, "You died!");
+	pause->title_color = RED;
+	
+	pause->num_options = 2;
+	pause->options = malloc(sizeof(MenuOption) * pause->num_options);
+	
+	pause->options[0].length = 45;
+	pause->options[0].name = malloc(pause->options[0].length * sizeof(char));
+	sprintf(pause->options[0].name, "%03d? You can do better than that. Try again!", score);
+	pause->options[0].action = main_menu;
+	
+	pause->options[1].length = 5;
+	pause->options[1].name = malloc(pause->options[1].length * sizeof(char));
+	strcpy(pause->options[1].name, "Exit");
+	pause->options[1].action = exit_wrapper;
+	
+	pause->selected_option = 0;
+	pause->back_option = 0;
+	
+	current_menu = pause;
+	
+	loop(run_menu, START_SPEED);
+}
+
+void win(int score) {
+	stop_timer();
+	
+	Menu *pause = malloc(sizeof(Menu));
+	pause->title_width = 72;
+	pause->title_height = 7;
+	pause->title = malloc((pause->title_width * pause->title_height + 1) * sizeof(char));
+	strcpy(pause->title, "\\                 /  ==========  |\\      |  |\\      |  ========  ======  \\               /       ||      | \\     |  | \\     |  |         |     |  \\             /        ||      |  \\    |  |  \\    |  |         |     |   \\           /         ||      |   \\   |  |   \\   |  |====     |=====     \\   /\\    /          ||      |    \\  |  |    \\  |  |         |    \\      \\ /  \\  /           ||      |     \\ |  |     \\ |  |         |     \\      V    \\/        ==========  |      \\|  |      \\|  ========  |     |");
+	pause->title_alt = malloc(9 * sizeof(char));
+	strcpy(pause->title_alt, "You won!");
+	pause->title_color = BLUE;
+	
+	pause->num_options = 2;
+	pause->options = malloc(sizeof(MenuOption) * pause->num_options);
+	
+	pause->options[0].length = 22;
+	pause->options[0].name = malloc(pause->options[0].length * sizeof(char));
+	sprintf(pause->options[0].name, "Try to get %03d again?", score);
+	pause->options[0].action = main_menu;
+	
+	pause->options[1].length = 5;
+	pause->options[1].name = malloc(pause->options[1].length * sizeof(char));
+	strcpy(pause->options[1].name, "Exit");
+	pause->options[1].action = exit_wrapper;
 	
 	pause->selected_option = 0;
 	pause->back_option = 0;
@@ -51,31 +117,31 @@ void main_menu() {
 	Menu *main_menu = malloc(sizeof(Menu));
 	main_menu->title_width = 54;
 	main_menu->title_height = 7;
-	main_menu->title = malloc(main_menu->title_width * main_menu->title_height * sizeof(char));
+	main_menu->title = malloc((main_menu->title_width * main_menu->title_height + 1) * sizeof(char));
 	strcpy(main_menu->title, " =======   |\\      |        ^        |     /  ========/          | \\     |       / \\       |    /   |       \\          |  \\    |      /   \\      |   /    |        =======   |   \\   |     /_____\\     |===     |====           \\  |    \\  |    /       \\    |   \\    |               /  |     \\ |   /         \\   |    \\   |        =======   |      \\|  /           \\  |     \\  ========");
-	main_menu->title_alt = malloc(5 * sizeof(char));
+	main_menu->title_alt = malloc(6 * sizeof(char));
 	strcpy(main_menu->title_alt, "Snake");
 	main_menu->title_color = GREEN;
 	
 	main_menu->num_options = 4;
 	main_menu->options = malloc(sizeof(MenuOption) * main_menu->num_options);
 	
-	main_menu->options[0].length = 13;
+	main_menu->options[0].length = 14;
 	main_menu->options[0].name = malloc(main_menu->options[0].length * sizeof(char));
 	strcpy(main_menu->options[0].name, "Single Player");
 	main_menu->options[0].action = sp_wrapper;
 	
-	main_menu->options[1].length = 18;
+	main_menu->options[1].length = 19;
 	main_menu->options[1].name = malloc(main_menu->options[1].length * sizeof(char));
 	strcpy(main_menu->options[1].name, "Multiplayer (Host)");
 	main_menu->options[1].action = mp_wrapper_host;
 	
-	main_menu->options[2].length = 18;
+	main_menu->options[2].length = 19;
 	main_menu->options[2].name = malloc(main_menu->options[2].length * sizeof(char));
 	strcpy(main_menu->options[2].name, "Multiplayer (Join)");
 	main_menu->options[2].action = mp_wrapper_join;
 	
-	main_menu->options[3].length = 4;
+	main_menu->options[3].length = 5;
 	main_menu->options[3].name = malloc(main_menu->options[3].length * sizeof(char));
 	strcpy(main_menu->options[3].name, "Exit");
 	main_menu->options[3].action = exit_wrapper;
@@ -188,7 +254,7 @@ void draw_options(Menu *menu) {
 				color = RED;
 			}
 			int col = (COLS - menu->options[i].length) / 2;
-			for (int j = 0; j < menu->options[i].length; j++) {
+			for (int j = 0; j < menu->options[i].length - 1; j++) {
 				set_pixel(*(new_vec2d(col + j, row + 2*i)), menu->options[i].name[j], color);
 			}
 		}
@@ -202,7 +268,7 @@ void draw_options(Menu *menu) {
 				color = RED;
 			}
 			int col = (COLS - menu->options[i].length) / 2;
-			for (int j = 0; j < menu->options[i].length; j++) {
+			for (int j = 0; j < menu->options[i].length - 1; j++) {
 				set_pixel(*(new_vec2d(col + j, row + i)), menu->options[i].name[j], color);
 			}
 		}
@@ -216,7 +282,7 @@ void draw_options(Menu *menu) {
 				color = RED;
 			}
 			int col = 0;
-			for (int j = 0; j < menu->options[i].length; j++) {
+			for (int j = 0; j < menu->options[i].length - 1; j++) {
 				set_pixel(*(new_vec2d(col + j, row + i)), menu->options[i].name[j], color);
 			}
 		}
@@ -230,7 +296,7 @@ void draw_options(Menu *menu) {
 				color = RED;
 			}
 			int col = 0;
-			for (int j = 0; j < menu->options[i].length; j++) {
+			for (int j = 0; j < menu->options[i].length - 1; j++) {
 				set_pixel(*(new_vec2d(col + j, row + i)), menu->options[i].name[j], color);
 			}
 		}

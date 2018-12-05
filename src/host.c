@@ -8,6 +8,7 @@
 #include <netinet/in.h>
 #include <string.h>
 #include <unistd.h>
+#include <arpa/inet.h>
 
 #include "cursescontroller.h"
 
@@ -54,7 +55,7 @@ int host_sync (const Snake snake, const Food food) {
     char buffer[MESSAGE_BUFFER_SIZE];
     memset(buffer, '\0', MESSAGE_BUFFER_SIZE);
     read(asockid, buffer, MESSAGE_BUFFER_SIZE);
-    char *response[MESSAGE_BUFFER_SIZE];
+    char response[MESSAGE_BUFFER_SIZE];
     int offset = serialize_snake(snake, response, MESSAGE_BUFFER_SIZE);
     serialize_food(food, response + offset, MESSAGE_BUFFER_SIZE - offset);
     memset(response, '\0', MESSAGE_BUFFER_SIZE);

@@ -13,5 +13,7 @@ int asockid;
 void cleanup_host();
 void start_hosting();
 int host_sync(const Snake snake, const Food food);
+int serialize_snake(const Snake snake, char *buffer, int buffer_size);
+int serialize_food(const Food food, char *buffer, int buffer_size);
 
 #endif // HOST_H
