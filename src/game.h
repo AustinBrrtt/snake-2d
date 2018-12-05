@@ -17,6 +17,7 @@ int height;
 int speed;
 int score;
 int game_mode;
+int client_input;
 Snake *snake;
 Food *food;
 

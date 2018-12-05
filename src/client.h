@@ -11,6 +11,7 @@ void from_int(int number, char *output, int digits);
 void cleanup_client();
 void join();
 void client_sync(int input, Snake *snake, Food *food);
+int client_lock;
 
 Snake *parse_snake(char *message, int message_length);
 

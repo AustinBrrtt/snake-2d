@@ -27,26 +27,26 @@ void start_game(int mode) {
 	game_mode = mode;
 	switch(mode) {
 		case SINGLE_PLAYER:
-			food = new_food();
-			snake = new_snake(new_vec2d(width / 2, height / 2));
 			speed = START_SPEED;
 			score = 0;
 			food = new_food();
 			snake = new_snake(new_vec2d(width / 2, height / 2));
-			
 			loop(main_loop, START_SPEED);
 			break;
 		case MP_HOST:
-			start_hosting();
+			speed = START_SPEED;
+			score = 0;
+			food = new_food();
+			snake = new_snake(new_vec2d(width / 2, height / 2));
 			game_cleanup = cleanup_host;
-			
-			loop(host_loop, START_SPEED);
+			client_input = '\0';
+			waiting();
+			start_hosting();
 			break;
 		case MP_JOIN:
-			join();
 			game_cleanup = cleanup_client;
-			
-			loop(client_loop, START_SPEED);
+			waiting();
+			join();
 	}
 }
 
@@ -94,7 +94,7 @@ void main_loop() {
 			snake->direction = RIGHT;
 			break;
 		case 0x1b:
-			pause();
+			pause_menu();
 	}
 	
 	// Update snake and food
@@ -158,10 +158,10 @@ void host_loop() {
 			snake->direction = RIGHT;
 			break;
 		case 0x1b:
-			pause();
+			pause_menu();
 	}
 	
-	switch (host_sync(*snake, *food)) {
+	switch (client_input) {
 		case 'w':
 		case 0x103:
 			if (food->pos->y > 1) {
@@ -186,6 +186,7 @@ void host_loop() {
 				food->pos->x += 1;
 			}
 	}
+	client_input = '\0';
 	
 	// Update snake and food
 	int result = slither(snake, food);
@@ -213,7 +214,7 @@ void host_loop() {
 void client_loop() {
 	int c = getch();
 	if (c == 0x1b) {
-		pause();
+		pause_menu();
 	} else {
 		client_sync(getch(),snake, food);
 		if (!drawing) {
@@ -253,7 +254,7 @@ void speed_up() {
 
 // Ends gameplay
 void end_game(int success, int score) {
-	if (!success) {
+	if (success) {
 		win(score);
 	} else {
 		death(score);

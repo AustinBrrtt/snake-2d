@@ -13,8 +13,8 @@ Food *new_food() {
 
 // Randomly chooses location and lifespan for food 
 void spawn_food(Food *food) {
-	// Life is between 1 and 9
-	food->life = (rand() % 8 + 1) * TICKS_PER_DECAY;
+	// Life is between 1 and 9 
+	food->life = (rand() % 8 + 1) * TICKS_PER_DECAY + (TICKS_PER_DECAY - 1);
 	
 	if (COLS > 0 && LINES > 0) {
 		// Pick position on screen (border excluded)
@@ -55,7 +55,7 @@ void update_food(Food *food) {
 
 // Returns amount for snake to grow
 int eat_food(Food *food) {
-	int score = food->life % TICKS_PER_DECAY;
+	int score = food->life / TICKS_PER_DECAY;
 	if (score < 1) {
 		score = 1;
 	}

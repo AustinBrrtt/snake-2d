@@ -16,6 +16,7 @@ void init_curses(void (*cleanup)()) {
 	game_cleanup = cleanup;
 	signal(SIGINT, cleanup_curses);
 	signal(SIGSEGV, cleanup_curses);
+	signal(SIGPIPE, cleanup_curses);
 	initscr();
 	cbreak();
 	set_cr_noecho_mode();
@@ -48,7 +49,21 @@ void cleanup_curses(int signum) {
 	clear();
 	refresh();
 	tty_mode(1);
-	exit(0);
+	if (signum == SIGSEGV) {
+		printf("SEGMENTATION FAULT, WOOHOO!\n");
+		exit(SIGSEGV);
+	} else if (signum == SIGINT) {
+		printf("You did it yourself, you fool!\n");
+		exit(SIGINT);
+	} else if (signum == SIGPIPE) {
+		printf("The pipes have burst! Call a plumber!\n");
+		exit(SIGPIPE);	
+	} else if (signum == 0) {
+		printf("The game went kerplunk!\n");
+	} else {
+		printf("I don't even know why!\n");
+		exit(2);
+	}
 }
 
 // Cleans up and kills process
